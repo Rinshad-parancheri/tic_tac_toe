@@ -1,59 +1,72 @@
 const GameModule = (() => {
-    const createGame = (rl) => {
+    const createGame = () => {
         let currentPlayer = 'X';
+        const uiGameBoard = document.querySelector('.game-board');
+
+        // Create the Tic Tac Toe grid cells
+        const getSelection = (e) => {
+            let number = e.target.getAttribute('data-row');
+            const [row, col] = findGridPosition(number);
+            if (row === 10 || col === 10 || typeof gameBoard[row][col] !== 'number') {
+                console.log('Invalid selection! Enter again.');
+                getSelection(e); // Restart selection process
+            } else {
+                updateGameBoard(row, col,e);
+            }
+
+        };
+
+        function renderGameBoardInUi() {
+            let count = 1;
+            for (let i = 0; i < 3; i++) {
+
+                for (let j = 0; j < 3; j++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    // Set unique identifiers for each cell if needed
+                    cell.dataset.row = count;
+                    cell.addEventListener('click', getSelection)
+                    uiGameBoard.appendChild(cell);
+                    count++
+                }
+            }
+
+        }
+
         const gameBoard = [
             [1, 2, 3],
             [4, 5, 6],
             [7, 8, 9]
         ];
 
-        const displayGameBoard = () => {
-            for (let i = 0; i < 3; i++) {
-                console.log(gameBoard[i].join(' | '));
-                if (i < 2) {
-                    console.log('---------');
-                }
-            }
-        };
 
-        const getSelection = (rl) => {
-            rl.question(`Player ${currentPlayer}, enter the number of your column: `, (input) => {
-                const number = parseInt(input);
-                const [row, col] = findGridPosition(number);
-                if (row === 10 || col === 10 || typeof gameBoard[row][col] !== 'number') {
-                    console.log('Invalid selection! Enter again.');
-                    getSelection(rl); // Restart selection process
-                } else {
-                    updateGameBoard(row, col, rl);
-                }
-            });
-        };
-
-        const updateGameBoard = (row, col, rl) => {
-            updateGameStatus(row, col);
-            displayGameBoard();
+        const updateGameBoard = (row, col, e) => {
+            updateGameStatus(row, col, e);
+            
             if (checkWinner()) {
                 updateWinner();
             } else if (isBoardFull()) {
                 determineIfGameIsDraw();
             } else {
-                changeCurrentPlayer(rl);
+                changeCurrentPlayer();
             }
         };
 
-        const updateGameStatus = (row, col) => {
+        const updateGameStatus = (row, col,e) => {
             gameBoard[row][col] = currentPlayer;
+            updateGameBoardInUi(e);
         };
-
-        const changeCurrentPlayer = (rl) => {
+         const updateGameBoardInUi = (e) => {
+            e.target.innerText = currentPlayer
+         }
+        const changeCurrentPlayer = () => {
             currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
-            getSelection(rl);
         };
 
         const determineIfGameIsDraw = () => {
             console.log('It\'s a draw!');
-            displayGameBoard();
-            rl.close();
+    
+            
         };
 
         const isBoardFull = () => {
@@ -117,32 +130,27 @@ const GameModule = (() => {
 
         const findGridPosition = (input) => {
             if (input < 1 || input > 9) {
-                return [10, 10]; 
+                return [10, 10];
             }
             const row = Math.floor((input - 1) / 3);
             const col = (input - 1) % 3;
-        
+
             return [row, col];
 
         };
 
-        return { displayGameBoard, getSelection };
+        return { renderGameBoardInUi, getSelection };
     };
 
     return { createGame };
 })();
 
 const UIModule = (() => {
-    const readline = require('readline');
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
 
     const startGame = () => {
-        const game = GameModule.createGame(rl);
-        game.displayGameBoard();
-        game.getSelection(rl);
+        const game = GameModule.createGame();
+        game.renderGameBoardInUi()
+        // game.getSelection();
     };
 
     return { startGame };
