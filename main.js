@@ -2,16 +2,15 @@ const GameModule = (() => {
     const createGame = () => {
         let currentPlayer = 'X';
         const uiGameBoard = document.querySelector('.game-board');
+        const nextMoveBoard = document.getElementById('nextMove').innerText = `It's ${currentPlayer} move`
 
-        // Create the Tic Tac Toe grid cells
         const getSelection = (e) => {
             let number = e.target.getAttribute('data-row');
             const [row, col] = findGridPosition(number);
             if (row === 10 || col === 10 || typeof gameBoard[row][col] !== 'number') {
-                console.log('Invalid selection! Enter again.');
-                getSelection(e); // Restart selection process
+                const nextMoveBoard = document.getElementById('nextMove').innerText = 'invalid  move choose corectly' 
             } else {
-                updateGameBoard(row, col,e);
+                updateTheGameBoard(row, col, e);
             }
 
         };
@@ -23,7 +22,6 @@ const GameModule = (() => {
                 for (let j = 0; j < 3; j++) {
                     const cell = document.createElement('div');
                     cell.classList.add('cell');
-                    // Set unique identifiers for each cell if needed
                     cell.dataset.row = count;
                     cell.addEventListener('click', getSelection)
                     uiGameBoard.appendChild(cell);
@@ -40,33 +38,49 @@ const GameModule = (() => {
         ];
 
 
-        const updateGameBoard = (row, col, e) => {
-            updateGameStatus(row, col, e);
-            
+
+        const updateTheGameBoard = (row, col, e) => {
+            gameBoard[row][col] = currentPlayer;
+            updateGameBoardInUi(e);
+            updateTheGameStatusInUi();
+        };
+
+
+
+        const updateTheGameStatusInUi = () => {
+            const gameStatusTextBoard = document.getElementById('gameStatusText');
+          
+
             if (checkWinner()) {
-                updateWinner();
+                renderTheGameStatusBoard()
             } else if (isBoardFull()) {
-                determineIfGameIsDraw();
+                gameStatusTextBoard.innerText = `The game ended up in draw`
             } else {
                 changeCurrentPlayer();
             }
-        };
+        }
 
-        const updateGameStatus = (row, col,e) => {
-            gameBoard[row][col] = currentPlayer;
-            updateGameBoardInUi(e);
-        };
-         const updateGameBoardInUi = (e) => {
+        function renderTheGameStatusBoard(){
+            const gameStatusTextBoard = document.getElementById('gameStatusText');
+            const overLay = document.getElementById('overlay');
+            const overLayContent = document.getElementById('overlayContent');
+            (overLay.style.display = 'none')?overLay.style.display='block':overLay.style.display='none';
+             
+            overLayContent.classList.toggle('active');
+            gameStatusTextBoard.innerText = `${currentPlayer} wins the game`
+        }
+        const updateGameBoardInUi = (e) => {
             e.target.innerText = currentPlayer
-         }
+        }
         const changeCurrentPlayer = () => {
             currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
+            const nextMoveBoard = document.getElementById('nextMove').innerText = `It's ${currentPlayer} move`
         };
 
         const determineIfGameIsDraw = () => {
             console.log('It\'s a draw!');
-    
-            
+
+
         };
 
         const isBoardFull = () => {
@@ -81,9 +95,7 @@ const GameModule = (() => {
         };
 
         const updateWinner = () => {
-            console.log(`Player ${currentPlayer} wins!`);
-            displayGameBoard();
-            rl.close();
+
         };
 
         const checkRowWinner = () => {
@@ -150,7 +162,6 @@ const UIModule = (() => {
     const startGame = () => {
         const game = GameModule.createGame();
         game.renderGameBoardInUi()
-        // game.getSelection();
     };
 
     return { startGame };
