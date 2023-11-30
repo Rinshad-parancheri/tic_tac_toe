@@ -2,17 +2,16 @@ const GameModule = (() => {
     const createGame = (() => {
         let currentPlayer = 'X';
         let gameBoard = ['', '', '', '', '', '', '', '', ''];
-
+        let winner = false;
         const setUpEventListener = () => {
             const uiGameBoard = document.querySelector('.game-board');
             const restartBtn = document.getElementById('restartBtn');
-
 
             uiGameBoard.addEventListener('click', gameLogic.getSelection);
             restartBtn.onclick = (e) => gameLogic.restartGame();
 
         }
-        
+
         const uiMangments = (() => {
             const gameStatusTextBoard = document.getElementById('gameStatusText');
             const overLay = document.getElementById('overlay');
@@ -20,12 +19,12 @@ const GameModule = (() => {
             const nextMove = document.getElementById('nextMove');
 
             const renderTheGameStatusBoard = () => {
-                (!gameBoard.includes('')) ? gameStatusTextBoard.innerText = 'The game is draw': gameStatusTextBoard.innerText = `${currentPlayer} wins the game`;
+                (!winner) ? gameStatusTextBoard.innerText = 'The game is draw' : gameStatusTextBoard.innerText = `${currentPlayer} wins the game`;
                 overLay.style.display = 'block';
                 overLayContent.classList.add('active');
             }
 
-            const updateGameBoardInUi = (e) => {
+            const renderGameBoard = (e) => {
                 e.target.innerText = currentPlayer
             }
 
@@ -40,13 +39,12 @@ const GameModule = (() => {
                 nextMove.innerText = `It's ${currentPlayer} move`
             }
             const displayInvalidEntry = () => {
-
                 nextMove.innerText = 'invalid move, choose correctly';
             }
 
             return {
                 renderTheGameStatusBoard,
-                updateGameBoardInUi,
+                renderGameBoard,
                 restartGame,
                 userSelection,
                 displayInvalidEntry
@@ -78,9 +76,7 @@ const GameModule = (() => {
 
             const updateTheGameBoard = (row, e) => {
                 gameBoard[row] = currentPlayer;
-                console.log(gameBoard[row]);
-                console.log(gameBoard);
-                uiMangments.updateGameBoardInUi(e);
+                uiMangments.renderGameBoard(e);
                 checkWinner()
             };
 
@@ -96,23 +92,25 @@ const GameModule = (() => {
             };
 
             const checkWinner = () => {
-               for (let i = 0; i < winningCombination.length;i++){
-                let condition = winningCombination[i];
-                let cellA  = gameBoard[condition[0]];
-                let cellB = gameBoard[condition[1]];
-                let cellC = gameBoard[condition[2]];
+                for (let i = 0; i < winningCombination.length; i++) {
+                    let condition = winningCombination[i];
+                    let cellA = gameBoard[condition[0]];
+                    let cellB = gameBoard[condition[1]];
+                    let cellC = gameBoard[condition[2]];
 
-                if(cellA == '' || cellB == '' || cellC == ''){
-                    continue;
+                    if (cellA == '' || cellB == '' || cellC == '') {
+                        continue;
+                    }
+                    if (cellA === cellB && cellB === cellC) {
+                        winner = true;
+                        uiMangments.renderTheGameStatusBoard()
+                    }
                 }
 
-                if (cellA === cellB && cellB === cellC){
+                if (!gameBoard.includes('')) {
                     uiMangments.renderTheGameStatusBoard()
-                }else if (!gameBoard.includes('')){
-                      uiMangments.renderTheGameStatusBoard()
                 }
-               }
-               changeCurrentPlayer();
+                changeCurrentPlayer();
             };
 
             return {
@@ -124,7 +122,7 @@ const GameModule = (() => {
         const initializeGameBoard = () => {
             const uiGameBoard = document.querySelector('.game-board');
             const nextMoveBoard = document.getElementById('nextMove')
-            nextMoveBoard.innerText = `It's ${currentPlayer} move`
+            uiMangments.gam
 
             uiGameBoard.innerHTML = '';
             for (let i = 0; i < 9; i++) {
