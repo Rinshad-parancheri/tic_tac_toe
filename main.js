@@ -2,8 +2,9 @@ const GameModule = (() => {
     const createGame = () => {
         let currentPlayer = 'X';
         const uiGameBoard = document.querySelector('.game-board');
-        const nextMoveBoard = document.getElementById('nextMove').innerText = `It's ${currentPlayer} move`
-
+        const nextMoveBoard = document.getElementById('nextMove').innerText 
+        nextMoveBoard.innerText =  `It's ${currentPlayer} move`
+       
         const getSelection = (e) => {
             let number = e.target.getAttribute('data-row');
             const [row, col] = findGridPosition(number);
@@ -15,7 +16,7 @@ const GameModule = (() => {
 
         };
 
-        function renderGameBoardInUi() {
+        function renderGameBoard() {
             let count = 1;
             for (let i = 0; i < 3; i++) {
 
@@ -31,13 +32,11 @@ const GameModule = (() => {
 
         }
 
-        const gameBoard = [
+        let gameBoard = [
             [1, 2, 3],
             [4, 5, 6],
             [7, 8, 9]
         ];
-
-
 
         const updateTheGameBoard = (row, col, e) => {
             gameBoard[row][col] = currentPlayer;
@@ -45,16 +44,11 @@ const GameModule = (() => {
             updateTheGameStatusInUi();
         };
 
-
-
         const updateTheGameStatusInUi = () => {
-            const gameStatusTextBoard = document.getElementById('gameStatusText');
-          
-
             if (checkWinner()) {
                 renderTheGameStatusBoard()
             } else if (isBoardFull()) {
-                gameStatusTextBoard.innerText = `The game ended up in draw`
+                renderTheGameStatusBoard()
             } else {
                 changeCurrentPlayer();
             }
@@ -64,23 +58,36 @@ const GameModule = (() => {
             const gameStatusTextBoard = document.getElementById('gameStatusText');
             const overLay = document.getElementById('overlay');
             const overLayContent = document.getElementById('overlayContent');
-            (overLay.style.display = 'none')?overLay.style.display='block':overLay.style.display='none';
-             
-            overLayContent.classList.toggle('active');
-            gameStatusTextBoard.innerText = `${currentPlayer} wins the game`
+            overLay.style.display='block';
+            
+            overLayContent.classList.add('active');
+            (isBoardFull())?gameStatusTextBoard.innerText = 'The game is draw':gameStatusTextBoard.innerText = `${currentPlayer} wins the game`
+            const  restartBtn = document.getElementById('restartBtn');
+              restartBtn.onclick = (e) => restartGame(overLay, overLayContent, gameStatusTextBoard)
         }
+
+        function restartGame(overLay, overLayContent,gameStatusTextBoard){
+            overLay.style.display = 'none';
+            gameStatusTextBoard.innerText = '';
+            overLayContent.classList.remove('active');
+
+            uiGameBoard.innerHTML = '';
+            gameBoard = [
+                [1, 2, 3],
+                [4, 5, 6],
+                [7, 8, 9]
+            ];
+            renderGameBoard();
+            currentPlayer = 'X';
+            nextMoveBoard.innerText = currentPlayer;
+        }
+
         const updateGameBoardInUi = (e) => {
             e.target.innerText = currentPlayer
         }
         const changeCurrentPlayer = () => {
             currentPlayer = (currentPlayer === 'X') ? 'O' : 'X';
             const nextMoveBoard = document.getElementById('nextMove').innerText = `It's ${currentPlayer} move`
-        };
-
-        const determineIfGameIsDraw = () => {
-            console.log('It\'s a draw!');
-
-
         };
 
         const isBoardFull = () => {
@@ -92,10 +99,6 @@ const GameModule = (() => {
                 }
             }
             return true;
-        };
-
-        const updateWinner = () => {
-
         };
 
         const checkRowWinner = () => {
@@ -151,7 +154,7 @@ const GameModule = (() => {
 
         };
 
-        return { renderGameBoardInUi, getSelection };
+        return {renderGameBoard};
     };
 
     return { createGame };
@@ -161,7 +164,7 @@ const UIModule = (() => {
 
     const startGame = () => {
         const game = GameModule.createGame();
-        game.renderGameBoardInUi()
+        game.renderGameBoard();
     };
 
     return { startGame };
