@@ -1,11 +1,7 @@
 const GameModule = (() => {
     const createGame = (() => {
         let currentPlayer = 'X';
-        let gameBoard = [
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9]
-        ];
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
 
         const setUpEventListener = () => {
             const uiGameBoard = document.querySelector('.game-board');
@@ -16,15 +12,15 @@ const GameModule = (() => {
             restartBtn.onclick = (e) => gameLogic.restartGame();
 
         }
-``
+        
         const uiMangments = (() => {
             const gameStatusTextBoard = document.getElementById('gameStatusText');
             const overLay = document.getElementById('overlay');
             const overLayContent = document.getElementById('overlayContent');
             const nextMove = document.getElementById('nextMove');
-            
+
             const renderTheGameStatusBoard = () => {
-                (gameLogic.checkWinner) ? gameStatusTextBoard.innerText = `${currentPlayer} wins the game` : gameStatusTextBoard.innerText = 'The game is draw'
+                (!gameBoard.includes('')) ? gameStatusTextBoard.innerText = 'The game is draw': gameStatusTextBoard.innerText = `${currentPlayer} wins the game`;
                 overLay.style.display = 'block';
                 overLayContent.classList.add('active');
             }
@@ -59,38 +55,37 @@ const GameModule = (() => {
         })();
 
         const gameLogic = (() => {
+            const winningCombination = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ]
+
             const getSelection = (e) => {
                 let number = e.target.dataset.row;
-                const [row, col] = findGridPosition(number);
-                if (row === 10 || col === 10 || typeof gameBoard[row][col] !== 'number') {
+                let row = number
+                if (row === 10 || gameBoard[row] !== '') {
                     uiMangments.displayInvalidEntry()
                 } else {
-                    updateTheGameBoard(row, col, e);
+                    updateTheGameBoard(row, e);
                 }
             };
 
-            const updateTheGameBoard = (row, col, e) => {
-                gameBoard[row][col] = currentPlayer;
+            const updateTheGameBoard = (row, e) => {
+                gameBoard[row] = currentPlayer;
+                console.log(gameBoard[row]);
+                console.log(gameBoard);
                 uiMangments.updateGameBoardInUi(e);
-                checkGameStatus();
+                checkWinner()
             };
-
-            const checkGameStatus = () => {
-                if (checkWinner()) {
-                    uiMangments.renderTheGameStatusBoard()
-                } else if (isBoardFull()) {
-                    uiMangments.renderTheGameStatusBoard()
-                } else {
-                    changeCurrentPlayer();
-                }
-            }
 
             const restartGame = (e) => {
-                gameBoard = [
-                    [1, 2, 3],
-                    [4, 5, 6],
-                    [7, 8, 9]
-                ];
+                gameBoard = ['', '', '', '', '', '', '', '', ''];
                 initializeGameBoard();
                 currentPlayer = 'X';
                 uiMangments.restartGame();
@@ -100,95 +95,43 @@ const GameModule = (() => {
                 uiMangments.userSelection()
             };
 
-            const isBoardFull = () => {
-                for (let i = 0; i < 3; i++) {
-                    for (let j = 0; j < 3; j++) {
-                        if (typeof gameBoard[i][j] === 'number') {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            };
-
-            const checkRowWinner = () => {
-                for (let i = 0; i < 3; i++) {
-                    if (typeof gameBoard[i][0] !== 'number' &&
-                        gameBoard[i][0] === gameBoard[i][1] && gameBoard[i][1] === gameBoard[i][2]) {
-                        return true;
-                    }
-                    return false;
-                }
-            }
-            const checkColumnWinner = () => {
-                for (let i = 0; i < 3; i++) {
-                    if (
-                        typeof gameBoard[0][i] !== 'number' &&
-                        gameBoard[0][i] === gameBoard[1][i] && gameBoard[1][i] === gameBoard[2][i]
-                    ) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-
-            const checkDiagonalWinner = () => {
-                if (
-                    typeof gameBoard[0][0] !== 'number' &&
-                    gameBoard[0][0] === gameBoard[1][1] && gameBoard[1][1] === gameBoard[2][2]
-                ) {
-                    return true;
-                }
-
-                if (
-                    typeof gameBoard[0][2] !== 'number' &&
-                    gameBoard[0][2] === gameBoard[1][1] && gameBoard[1][1] === gameBoard[2][0]
-                ) {
-                    return true;
-                }
-                return false;
-            };
-
             const checkWinner = () => {
-                return checkRowWinner() || checkColumnWinner() || checkDiagonalWinner();
-            };
+               for (let i = 0; i < winningCombination.length;i++){
+                let condition = winningCombination[i];
+                let cellA  = gameBoard[condition[0]];
+                let cellB = gameBoard[condition[1]];
+                let cellC = gameBoard[condition[2]];
 
-            const findGridPosition = (input) => {
-                if (input < 1 || input > 9) {
-                    return [10, 10];
+                if(cellA == '' || cellB == '' || cellC == ''){
+                    continue;
                 }
-                const row = Math.floor((input - 1) / 3);
-                const col = (input - 1) % 3;
 
-                return [row, col];
-
+                if (cellA === cellB && cellB === cellC){
+                    uiMangments.renderTheGameStatusBoard()
+                }else if (!gameBoard.includes('')){
+                      uiMangments.renderTheGameStatusBoard()
+                }
+               }
+               changeCurrentPlayer();
             };
-
 
             return {
                 getSelection,
-                isBoardFull,
-                checkWinner,
                 restartGame
             };
         })();
 
         const initializeGameBoard = () => {
-            let count = 1;
             const uiGameBoard = document.querySelector('.game-board');
             const nextMoveBoard = document.getElementById('nextMove')
             nextMoveBoard.innerText = `It's ${currentPlayer} move`
 
             uiGameBoard.innerHTML = '';
-            for (let i = 0; i < 3; i++) {
-
-                for (let j = 0; j < 3; j++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.dataset.row = count;
-                    uiGameBoard.appendChild(cell);
-                    count++
-                }
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.row = i;
+                uiGameBoard.appendChild(cell);
             }
             setUpEventListener();
 
